@@ -1,1 +1,20 @@
---- {}
+condor::usermaps::vo_pools:
+  alice: 9000
+  atlas: 10000
+  biomed: 11000
+  cernatschool: 12000
+  cms: 13000
+  dteam: 14000
+  dune: 15000
+  elibeamsuk: 16000
+  eucliduk: 17000
+  gridpp: 18000
+  ilc: 19000
+  lhcb: 20000
+  lsst: 21000
+  lz: 22000
+  ops: 23000
+  pheno: 24000
+  skatelescopeeu: 25000
+  snoplus: 26000
+  t2k: 27000
