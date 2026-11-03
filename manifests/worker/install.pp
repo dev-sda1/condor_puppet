@@ -6,41 +6,12 @@
 #   include condor::worker::install
 class condor::worker::install(
   String $supported_vos = 'cms lhcb atlas dune gridpp ops',
-  $use_official_repo = false, ## If true this will use the HTCondor repo instead of downloading condor from EPEL.
   $schedd_fqdn = '',
   Sensitive $schedd_password = '',
   # $disable_firewalld = false, ## If your setup uses border firewalls. This currently does nothing as functionality not implemented yet!
   # $configure_selinux = false, ## If your setup uses SELinux
   $scratch_directory = '/scratch'
 ) {
-  $_wlcg_packages = ['apptainer', 'HEP_OSlibs', 'wlcg-iam*', 'wlcg-voms*', 'fetch-crl', 'bind-utils', 'java-latest-openjdk', 'wget', 'bc']
-
-  package {'epel-release':
-    ensure => installed,
-  }
-
-  exec { 'enable_crb_repo':
-    command => '/usr/bin/dnf config-manager --set-enabled crb',
-    unless  => '/usr/bin/dnf repolist enabled | /usr/bin/grep -qi "^crb"',
-  }
-
-  package {$_wlcg_packages: ensure => installed}
-
-  if $use_official_repo { ## TODO: Check for EL10
-    package {'htcondor-release-25.0-1.el9.noarch':
-      ensure => installed,
-      source => 'https://htcss-downloads.chtc.wisc.edu/repo/25.0/htcondor-release-current.el9.noarch.rpm'
-    }
-
-    package {'condor':
-      ensure => installed
-    }
-  }else {
-    package {'condor':
-      ensure => installed,
-    }
-  }
-
   $_split_vos = $supported_vos.split(' ')
   class {'condor::usermaps':
     vos_supported => $_split_vos
@@ -82,6 +53,9 @@ class condor::worker::install(
       CONDOR_HOST = ${schedd_fqdn}
 
       COLLECTOR_NAME = $(FULL_HOSTNAME)
+
+      IN_HIGHPORT = 25000
+      IN_LOWPORT = 21000
       
       START = TRUE
 
@@ -100,6 +74,10 @@ class condor::worker::install(
       ENABLE_IPV6=TRUE
       NETWORK_INTERFACE=${facts['networking']['ip6']}
       PREFER_IPV4 = false
+
+      EXECUTE = ${scratch_directory}
+
+      STARTER_ALLOW_RUNAS_OWNER = TRUE
       use role:get_htcondor_execute
       | EOF
   }
